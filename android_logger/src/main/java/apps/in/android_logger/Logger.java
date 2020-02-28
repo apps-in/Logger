@@ -80,6 +80,17 @@ public class Logger {
         }
 
         /**
+         * Enables writing logs to server.
+         *
+         * @param url server URL
+         * @return current Initializer
+         */
+        public Initializer writeToServer(String url) {
+            instance.setWriteToServer(url);
+            return this;
+        }
+
+        /**
          * Setup Application id.
          *
          * @param appId Application id
@@ -111,6 +122,7 @@ public class Logger {
     }
 
     private final Semaphore fileSemaphore = new Semaphore(1, true);
+    private final Semaphore serverSemaphore = new Semaphore(1, true);
 
     private File logFile;
     private String appTag;
@@ -118,9 +130,11 @@ public class Logger {
     private String appVersion;
     private boolean writeToConsole;
     private boolean writeToFile;
+    private boolean writeToServer;
     private String previousLogPath;
     private String currentLogPath;
     private String zipLogPath;
+    private String serverUrl;
 
     /**
      * Private constructor for Logger object.
@@ -361,6 +375,16 @@ public class Logger {
     }
 
     /**
+     * Setup server logging
+     *
+     * @param url server URL
+     */
+    private void setWriteToServer(String url){
+        this.writeToServer = true;
+        this.serverUrl = url;
+    }
+
+    /**
      * Starts logging
      */
     private void startLogging() {
@@ -472,6 +496,9 @@ public class Logger {
         if (writeToFile) {
             logToFile(message);
         }
+        if (writeToServer){
+            logToServer(message);
+        }
     }
 
     /**
@@ -500,6 +527,27 @@ public class Logger {
                     e.printStackTrace();
                 } finally {
                     fileSemaphore.release();
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * Writes given message to server
+     *
+     * @param message message to log
+     */
+    private void logToServer(final String message) {
+        final String text = String.format("%s - %s", dateFormat.format(new Date()), message);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    serverSemaphore.acquire();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    serverSemaphore.release();
                 }
             }
         }).start();
