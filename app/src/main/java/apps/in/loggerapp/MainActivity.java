@@ -14,6 +14,7 @@ public class MainActivity extends LogActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Logger.log("Test message");
         findViewById(R.id.buttonZipLogs).setOnClickListener(v -> ((TextView) findViewById(R.id.textViewZipPath)).setText(Logger.getLogZip()));
         final Activity activity = this;
         findViewById(R.id.buttonShareLogs).setOnClickListener(v -> Logger.shareLog(activity, "Send logs", false));

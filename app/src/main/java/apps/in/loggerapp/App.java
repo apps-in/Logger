@@ -12,6 +12,7 @@ public class App extends Application {
         Logger.initializeLogger(this)
                 .writeToConsole("TEST")
                 .writeToFile()
+                .writeToServer("https://10.0.2.2:5001")
                 .initialize();
     }
 }

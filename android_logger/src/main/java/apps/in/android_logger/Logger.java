@@ -17,15 +17,25 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.security.cert.CertificateException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Semaphore;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -34,6 +44,47 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Logger object.
  */
 public class Logger {
+
+    public static OkHttpClient.Builder getUnsafeOkHttpClient() {
+        try {
+            // Create a trust manager that does not validate certificate chains
+            final TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                        }
+
+                        @Override
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                        }
+
+                        @Override
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return new java.security.cert.X509Certificate[]{};
+                        }
+                    }
+            };
+
+            // Install the all-trusting trust manager
+            final SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+            // Create an ssl socket factory with our all-trusting manager
+            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
+            builder.hostnameVerifier(new HostnameVerifier() {
+                @Override
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            });
+            return builder;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static final String LOG_PATH = "logs";
     private static final String LOG_FILE_NAME_CURRENT = "current.log";
@@ -102,7 +153,7 @@ public class Logger {
          * @param appId Application id
          * @return current Initializer
          */
-        public Initializer setAppId(String appId){
+        public Initializer setAppId(String appId) {
             instance.appId = appId;
             return this;
         }
@@ -113,7 +164,7 @@ public class Logger {
          * @param appVersion Application version name
          * @return current Initializer
          */
-        public Initializer setAppVersion(String appVersion){
+        public Initializer setAppVersion(String appVersion) {
             instance.appVersion = appVersion;
             return this;
         }
@@ -141,6 +192,7 @@ public class Logger {
     private String currentLogPath;
     private String zipLogPath;
     private String serverUrl;
+    private String sessionId;
 
     /**
      * Private constructor for Logger object.
@@ -340,7 +392,7 @@ public class Logger {
         if (path != null) {
             File file = new File(path);
             if (file.exists()) {
-                return FileProvider.getUriForFile(context,  String.format("%s.android_logger", context.getPackageName()), file);
+                return FileProvider.getUriForFile(context, String.format("%s.android_logger", context.getPackageName()), file);
             }
         }
         return null;
@@ -385,14 +437,16 @@ public class Logger {
      *
      * @param url server URL
      */
-    private void setWriteToServer(String url){
+    private void setWriteToServer(String url) {
         this.writeToServer = true;
         this.serverUrl = url;
         this.retrofit = new Retrofit.Builder()
                 .baseUrl(this.serverUrl)
+                .client(getUnsafeOkHttpClient().build())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         this.serverApi = retrofit.create(ServerApi.class);
+        this.sessionId = UUID.randomUUID().toString();
     }
 
     /**
@@ -411,7 +465,7 @@ public class Logger {
         Thread.setDefaultUncaughtExceptionHandler(logHandler);
         log(String.format("Logger started. Version: %s", BuildConfig.VERSION_NAME));
         log(String.format("Application ID: %s. Version: %s", appId, appVersion));
-        log(String.format(Locale.US, "%s (SDK %d)", Build.MODEL, Build.VERSION.SDK_INT));
+        log(String.format(Locale.US, "Device: %s (SDK %d)", Build.MODEL, Build.VERSION.SDK_INT));
     }
 
     /**
@@ -444,7 +498,7 @@ public class Logger {
             zipOutputStream.putNextEntry(new ZipEntry(fileName));
             byte[] buffer = new byte[65545];
             int count;
-            while ((count = fileInputStream.read(buffer)) > 0){
+            while ((count = fileInputStream.read(buffer)) > 0) {
                 zipOutputStream.write(buffer, 0, count);
             }
             zipOutputStream.closeEntry();
@@ -507,7 +561,7 @@ public class Logger {
         if (writeToFile) {
             logToFile(message);
         }
-        if (writeToServer){
+        if (writeToServer) {
             logToServer(message);
         }
     }
@@ -556,9 +610,9 @@ public class Logger {
                 try {
                     serverSemaphore.acquire();
                     try {
-                        serverApi.sendLog(new LogItem("1234567", message)).execute();
+                        serverApi.sendLog(new LogItem(sessionId, text)).execute();
                     } catch (Exception e){
-                        //do nothing
+                        e.printStackTrace();
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();

@@ -6,7 +6,10 @@ import retrofit2.http.POST;
 
 public interface ServerApi {
 
-    @POST("Api/Log/PostLog")
+    @POST("api/log")
     Call<Void> sendLog(@Body LogItem logItem);
+
+//    @GET("api/log")
+//    Call<Void> sendLog();
 
 }
