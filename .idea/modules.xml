@@ -3,11 +3,11 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Libraries-Logger.iml" filepath="$PROJECT_DIR$/Libraries-Logger.iml" group="Logger" />
-      <module fileurl="file://$PROJECT_DIR$/Logger.iml" filepath="$PROJECT_DIR$/Logger.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Logger.iml" filepath="$PROJECT_DIR$/Logger.iml" group="Logger" />
       <module fileurl="file://$PROJECT_DIR$/android_logger/Logger-android_logger.iml" filepath="$PROJECT_DIR$/android_logger/Logger-android_logger.iml" group="Logger/android_logger" />
       <module fileurl="file://$PROJECT_DIR$/app/Logger-app.iml" filepath="$PROJECT_DIR$/app/Logger-app.iml" group="Logger/app" />
-      <module fileurl="file://$PROJECT_DIR$/android_logger/android_logger.iml" filepath="$PROJECT_DIR$/android_logger/android_logger.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android_logger/android_logger.iml" filepath="$PROJECT_DIR$/android_logger/android_logger.iml" group="Logger/android_logger" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="Logger/app" />
     </modules>
   </component>
 </project>

@@ -555,7 +555,11 @@ public class Logger {
             public void run() {
                 try {
                     serverSemaphore.acquire();
-                    serverApi.sendLog(new LogItem("1234567", message));
+                    try {
+                        serverApi.sendLog(new LogItem("1234567", message)).execute();
+                    } catch (Exception e){
+                        //do nothing
+                    }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } finally {
