@@ -26,6 +26,9 @@ import java.util.concurrent.Semaphore;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 
 /**
  * Logger object.
@@ -38,6 +41,9 @@ public class Logger {
     private static final String LOG_FILE_NAME_ZIP = "log.zip";
     private static Logger logger;
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS", Locale.US);
+
+    private ServerApi serverApi;
+    private Retrofit retrofit;
 
     /**
      * Initializer for Logger.
@@ -382,6 +388,11 @@ public class Logger {
     private void setWriteToServer(String url){
         this.writeToServer = true;
         this.serverUrl = url;
+        this.retrofit = new Retrofit.Builder()
+                .baseUrl(this.serverUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        this.serverApi = retrofit.create(ServerApi.class);
     }
 
     /**
@@ -544,6 +555,7 @@ public class Logger {
             public void run() {
                 try {
                     serverSemaphore.acquire();
+                    serverApi.sendLog(new LogItem("1234567", message));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } finally {
