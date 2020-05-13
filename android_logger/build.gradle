@@ -3,8 +3,8 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 29
 
-    def versionMajor = 0
-    def versionMinor = 6
+    def versionMajor = 1
+    def versionMinor = 0
     def versionPatch = 0
 
     def code = versionMajor * 100 + versionMinor
