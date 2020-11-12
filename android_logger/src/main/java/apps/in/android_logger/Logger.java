@@ -37,15 +37,15 @@ public class Logger {
     private static final String LOG_FILE_NAME_PREVIOUS = "previous.log";
     private static final String LOG_FILE_NAME_ZIP = "log.zip";
     private static Logger logger;
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS", Locale.US);
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS", Locale.US);
 
     /**
      * Initializer for Logger.
      */
     public static class Initializer {
 
-        private Logger instance;
-        private Context context;
+        private final Logger instance;
+        private final Context context;
 
         /**
          * Instantiates a new Initializer.
@@ -85,7 +85,7 @@ public class Logger {
          * @param appId Application id
          * @return current Initializer
          */
-        public Initializer setAppId(String appId){
+        public Initializer setAppId(String appId) {
             instance.appId = appId;
             return this;
         }
@@ -96,7 +96,7 @@ public class Logger {
          * @param appVersion Application version name
          * @return current Initializer
          */
-        public Initializer setAppVersion(String appVersion){
+        public Initializer setAppVersion(String appVersion) {
             instance.appVersion = appVersion;
             return this;
         }
@@ -320,7 +320,7 @@ public class Logger {
         if (path != null) {
             File file = new File(path);
             if (file.exists()) {
-                return FileProvider.getUriForFile(context,  String.format("%s.android_logger", context.getPackageName()), file);
+                return FileProvider.getUriForFile(context, String.format("%s.android_logger", context.getPackageName()), file);
             }
         }
         return null;
@@ -389,7 +389,7 @@ public class Logger {
              ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
             addLogFileToZip(zipOutputStream, previousLogPath, LOG_FILE_NAME_PREVIOUS);
             addLogFileToZip(zipOutputStream, currentLogPath, LOG_FILE_NAME_CURRENT);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -409,11 +409,11 @@ public class Logger {
             zipOutputStream.putNextEntry(new ZipEntry(fileName));
             byte[] buffer = new byte[65545];
             int count;
-            while ((count = fileInputStream.read(buffer)) > 0){
+            while ((count = fileInputStream.read(buffer)) > 0) {
                 zipOutputStream.write(buffer, 0, count);
             }
             zipOutputStream.closeEntry();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -496,7 +496,7 @@ public class Logger {
                 try {
                     fileSemaphore.acquire();
                     appendToFile(text);
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
                     fileSemaphore.release();
@@ -517,7 +517,7 @@ public class Logger {
                 BufferedWriter bw = new BufferedWriter(osw)) {
             bw.newLine();
             bw.append(message);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -533,9 +533,9 @@ public class Logger {
         StringBuilder stringBuilder = new StringBuilder();
         if (bundle != null) {
             Set<String> keys = bundle.keySet();
-            stringBuilder.append(String.format("\t%s (%s items)", description, String.valueOf(keys.size())));
+            stringBuilder.append(String.format("\t%s (%s items)", description, keys.size()));
             for (String key : keys) {
-                stringBuilder.append(String.format("\n\t%s = %s", key, String.valueOf(bundle.get(key))));
+                stringBuilder.append(String.format("\n\t%s = %s", key, bundle.get(key)));
             }
         } else {
             stringBuilder.append(String.format("\t%s: null", description));
@@ -554,7 +554,7 @@ public class Logger {
         StringBuilder stringBuilder = new StringBuilder();
         if (intent != null) {
             stringBuilder.append(description);
-            stringBuilder.append(String.format("\nACTION: %s", String.valueOf(intent.getAction())));
+            stringBuilder.append(String.format("\nACTION: %s", intent.getAction()));
             stringBuilder.append(String.format("\nCOMPONENT NAME: %s", getComponentName(intent.getComponent())));
             stringBuilder.append(String.format("\n%s", getBundleString("EXTRAS", intent.getExtras())));
         } else {
