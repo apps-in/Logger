@@ -370,11 +370,13 @@ public class Logger {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
                 logMessage("Uncaught exception", e);
-                regularHandler.uncaughtException(t, e);
+                if (regularHandler != null) {
+                    regularHandler.uncaughtException(t, e);
+                }
             }
         };
         Thread.setDefaultUncaughtExceptionHandler(logHandler);
-        log(String.format("Logger started. Version: %s", BuildConfig.VERSION_NAME));
+        log(String.format("Logger started. Version: %s", BuildConfig.VERSION));
         log(String.format("Application ID: %s. Version: %s", appId, appVersion));
         log(String.format(Locale.US, "%s (SDK %d)", Build.MODEL, Build.VERSION.SDK_INT));
     }
@@ -533,9 +535,9 @@ public class Logger {
         StringBuilder stringBuilder = new StringBuilder();
         if (bundle != null) {
             Set<String> keys = bundle.keySet();
-            stringBuilder.append(String.format("\t%s (%s items)", description, keys.size()));
+            stringBuilder.append(String.format(Locale.US, "\t%s (%d items)", description, keys.size()));
             for (String key : keys) {
-                stringBuilder.append(String.format("\n\t%s = %s", key, bundle.get(key)));
+                stringBuilder.append(String.format("\n\t%s = %s", key, String.valueOf(bundle.get(key))));
             }
         } else {
             stringBuilder.append(String.format("\t%s: null", description));

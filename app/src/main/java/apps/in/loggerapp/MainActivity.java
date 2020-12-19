@@ -16,7 +16,7 @@ public class MainActivity extends LogActivity {
         setContentView(R.layout.activity_main);
         findViewById(R.id.buttonZipLogs).setOnClickListener(v -> ((TextView) findViewById(R.id.textViewZipPath)).setText(Logger.getLogZip()));
         final Activity activity = this;
-        findViewById(R.id.buttonShareLogs).setOnClickListener(v -> Logger.shareLog(activity, "Send logs", false));
+        findViewById(R.id.buttonShareLogs).setOnClickListener(v -> Logger.shareLog(activity, "Send logs", true));
         findViewById(R.id.buttonCrash).setOnClickListener(v -> {
             int temp = 1 / 0;
         });
