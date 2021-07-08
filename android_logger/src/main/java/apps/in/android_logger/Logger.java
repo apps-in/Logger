@@ -3,6 +3,7 @@ package apps.in.android_logger;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -36,6 +37,8 @@ public class Logger {
     private static final String LOG_FILE_NAME_CURRENT = "current.log";
     private static final String LOG_FILE_NAME_PREVIOUS = "previous.log";
     private static final String LOG_FILE_NAME_ZIP = "log.zip";
+    private static final String PREFERENCES_FILE = "logger.pref";
+    private static final String CRASH_PREF_KEY = "WAS_CRASH";
     private static Logger logger;
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS", Locale.US);
 
@@ -53,7 +56,7 @@ public class Logger {
          * @param context application context
          */
         public Initializer(Context context) {
-            instance = new Logger();
+            instance = new Logger(context.getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE));
             this.context = context;
         }
 
@@ -112,6 +115,7 @@ public class Logger {
 
     private final Semaphore fileSemaphore = new Semaphore(1, true);
 
+    private final SharedPreferences sharedPreferences;
     private File logFile;
     private String appTag;
     private String appId;
@@ -124,9 +128,11 @@ public class Logger {
 
     /**
      * Private constructor for Logger object.
+     *
+     * @param sharedPreferences logger preferences
      */
-    private Logger() {
-
+    private Logger(SharedPreferences sharedPreferences) {
+        this.sharedPreferences = sharedPreferences;
     }
 
     /**
@@ -137,6 +143,16 @@ public class Logger {
      */
     public static Initializer initializeLogger(Context context) {
         return new Initializer(context);
+    }
+
+    public static boolean hasUncheckedCrashes(){
+        SharedPreferences sharedPreferences = getLogger().sharedPreferences;
+        if (sharedPreferences.contains(CRASH_PREF_KEY)){
+            boolean result = sharedPreferences.getBoolean(CRASH_PREF_KEY, false);
+            sharedPreferences.edit().remove(CRASH_PREF_KEY).apply();
+            return result;
+        }
+        return false;
     }
 
     /**
@@ -370,6 +386,7 @@ public class Logger {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
                 logMessage("Uncaught exception", e);
+                sharedPreferences.edit().putBoolean(CRASH_PREF_KEY, true).apply();
                 if (regularHandler != null) {
                     regularHandler.uncaughtException(t, e);
                 }
@@ -537,7 +554,7 @@ public class Logger {
             Set<String> keys = bundle.keySet();
             stringBuilder.append(String.format(Locale.US, "\t%s (%d items)", description, keys.size()));
             for (String key : keys) {
-                stringBuilder.append(String.format("\n\t%s = %s", key, String.valueOf(bundle.get(key))));
+                stringBuilder.append(String.format("\n\t%s = %s", key, bundle.get(key)));
             }
         } else {
             stringBuilder.append(String.format("\t%s: null", description));

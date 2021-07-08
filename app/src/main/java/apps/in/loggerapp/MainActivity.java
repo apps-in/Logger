@@ -20,5 +20,9 @@ public class MainActivity extends LogActivity {
         findViewById(R.id.buttonCrash).setOnClickListener(v -> {
             int temp = 1 / 0;
         });
+        findViewById(R.id.buttonCheckCrash).setOnClickListener(v -> {
+            boolean result = Logger.hasUncheckedCrashes();
+            ((TextView) findViewById(R.id.textCheckCrash)).setText(String.valueOf(result));
+        });
     }
 }
