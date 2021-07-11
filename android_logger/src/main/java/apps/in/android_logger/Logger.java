@@ -332,7 +332,7 @@ public class Logger {
      * @param path    path to log file
      * @return uri for given log file
      */
-    private static Uri getFileUri(Context context, String path) {
+    public static Uri getFileUri(Context context, String path) {
         if (path != null) {
             File file = new File(path);
             if (file.exists()) {
