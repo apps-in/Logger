@@ -10,6 +10,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         Logger.initializeLogger(this)
+                .setAppId(getPackageName())
+                .setAppVersion("DEMO")
                 .writeToConsole("TEST")
                 .writeToFile()
                 .initialize();

@@ -6,6 +6,7 @@ import android.widget.TextView;
 
 import apps.in.android_logger.LogActivity;
 import apps.in.android_logger.Logger;
+import apps.in.loggerapp.databinding.ActivityMainBinding;
 
 
 public class MainActivity extends LogActivity {
@@ -13,16 +14,17 @@ public class MainActivity extends LogActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        findViewById(R.id.buttonZipLogs).setOnClickListener(v -> ((TextView) findViewById(R.id.textViewZipPath)).setText(Logger.getLogZip()));
+        ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        binding.buttonZipLogs.setOnClickListener(v -> binding.textViewZipPath.setText(Logger.getLogZip()));
         final Activity activity = this;
-        findViewById(R.id.buttonShareLogs).setOnClickListener(v -> Logger.shareLog(activity, "Send logs", true));
-        findViewById(R.id.buttonCrash).setOnClickListener(v -> {
+        binding.buttonShareLogs.setOnClickListener(v -> Logger.shareLog(activity, "Send logs", true));
+        binding.buttonCrash.setOnClickListener(v -> {
             int temp = 1 / 0;
         });
-        findViewById(R.id.buttonCheckCrash).setOnClickListener(v -> {
+        binding.buttonCheckCrash.setOnClickListener(v -> {
             boolean result = Logger.hasUncheckedCrashes();
-            ((TextView) findViewById(R.id.textCheckCrash)).setText(String.valueOf(result));
+            binding.textCheckCrash.setText(String.valueOf(result));
         });
     }
 }

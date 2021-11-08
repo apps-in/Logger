@@ -20,7 +20,12 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
@@ -34,13 +39,15 @@ import java.util.zip.ZipOutputStream;
 public class Logger {
 
     private static final String LOG_PATH = "logs";
-    private static final String LOG_FILE_NAME_CURRENT = "current.log";
-    private static final String LOG_FILE_NAME_PREVIOUS = "previous.log";
+    private static final int LOG_TO_FILE_MAX_DAYS_DEFAULT_VALUE = 1;
+    private static final int LOG_TO_FILE_MIN_COUNT_DEFAULT_VALUE = 2;
+    private static final String LOG_FILE_NAME_SUFFIX = ".log";
     private static final String LOG_FILE_NAME_ZIP = "log.zip";
     private static final String PREFERENCES_FILE = "logger.pref";
     private static final String CRASH_PREF_KEY = "WAS_CRASH";
     private static Logger logger;
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS", Locale.US);
+    private static final SimpleDateFormat fileNameDateTimeFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.US);
+    private static final SimpleDateFormat logDateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS", Locale.US);
 
     /**
      * Initializer for Logger.
@@ -78,7 +85,18 @@ public class Logger {
          * @return current Initializer
          */
         public Initializer writeToFile() {
-            instance.setWriteToFile(context);
+            return writeToFile(LOG_TO_FILE_MAX_DAYS_DEFAULT_VALUE, LOG_TO_FILE_MIN_COUNT_DEFAULT_VALUE);
+        }
+
+        /**
+         * Enables writing logs to file.
+         *
+         * @param maxDays maximum days before current date to keep log files
+         * @param minCount minimum number of log files to keep
+         * @return current Initializer
+         */
+        public Initializer writeToFile(int maxDays, int minCount) {
+            instance.setWriteToFile(context, Math.max(maxDays, LOG_TO_FILE_MAX_DAYS_DEFAULT_VALUE), Math.max(minCount, LOG_TO_FILE_MIN_COUNT_DEFAULT_VALUE));
             return this;
         }
 
@@ -116,14 +134,13 @@ public class Logger {
     private final Semaphore fileSemaphore = new Semaphore(1, true);
 
     private final SharedPreferences sharedPreferences;
+    private File logsDirectory;
     private File logFile;
     private String appTag;
     private String appId;
     private String appVersion;
     private boolean writeToConsole;
     private boolean writeToFile;
-    private String previousLogPath;
-    private String currentLogPath;
     private String zipLogPath;
 
     /**
@@ -239,24 +256,6 @@ public class Logger {
     }
 
     /**
-     * Gets current log file name.
-     *
-     * @return the current log file name
-     */
-    public static String getCurrentLogFileName() {
-        return getLogger().currentLogPath;
-    }
-
-    /**
-     * Gets previous log file name.
-     *
-     * @return the previous log file name
-     */
-    public static String getPreviousLogFileName() {
-        return getLogger().previousLogPath;
-    }
-
-    /**
      * Zips log files to single zip-archive.
      *
      * @return path to zip-archive with log files
@@ -309,7 +308,18 @@ public class Logger {
         Intent intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
         Logger logger = getLogger();
         ArrayList<Uri> uris = new ArrayList<>();
-        String[] files = new String[]{logger.previousLogPath, logger.currentLogPath};
+        List<String> files = new LinkedList<>();
+        File directory = getLogger().logsDirectory;
+        if (directory != null && directory.exists()){
+            File[] directoryFiles = directory.listFiles();
+            if (directoryFiles != null){
+                for (File directoryFile : directoryFiles){
+                    if (directoryFile.getName().endsWith(LOG_FILE_NAME_SUFFIX)){
+                        files.add(directoryFile.getAbsolutePath());
+                    }
+                }
+            }
+        }
         for (String filePath : files) {
             Uri uri = getFileUri(context, filePath);
             if (uri != null) {
@@ -346,31 +356,67 @@ public class Logger {
      * Setup file logging
      *
      * @param context app context
+     * @param maxDays maximum days before current date to keep log files
+     * @param minCount minimum number of log files to keep
      */
-    private void setWriteToFile(Context context) {
+    private void setWriteToFile(Context context, int maxDays, int minCount) {
         this.writeToFile = true;
         try {
-            File directory = new File(context.getFilesDir(), LOG_PATH);
-            if (!directory.exists()) {
-                directory.mkdir();
+            logsDirectory = new File(context.getFilesDir(), LOG_PATH);
+            if (!logsDirectory.exists()) {
+                logsDirectory.mkdir();
             }
-            File zip = new File(directory, LOG_FILE_NAME_ZIP);
+            File zip = new File(logsDirectory, LOG_FILE_NAME_ZIP);
             if (zip.exists()) {
                 zip.delete();
             }
             zipLogPath = zip.getAbsolutePath();
-            File previous = new File(directory, LOG_FILE_NAME_PREVIOUS);
-            if (previous.exists()) {
-                previous.delete();
+            Calendar calendar = Calendar.getInstance();
+            String currentLogFileName = fileNameDateTimeFormat.format(calendar.getTime());
+            calendar.add(Calendar.DAY_OF_MONTH, -maxDays);
+            Date min = calendar.getTime();
+            File[] files = logsDirectory.listFiles();
+            LinkedList<File> logFiles = new LinkedList<>();
+            if (files != null) {
+                for (File file : files) {
+                    String name = file.getName();
+                    if (name.endsWith(LOG_FILE_NAME_SUFFIX)){
+                        logFiles.add(file);
+                    } else {
+                        try {
+                            file.delete();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
-            logFile = new File(directory, LOG_FILE_NAME_CURRENT);
+            Collections.sort(logFiles, (o1, o2) -> o1.getName().compareTo(o2.getName()));
+            while (logFiles.size() > minCount){
+                File file = logFiles.getFirst();
+                String name = file.getName();
+                String date = name.substring(0, name.length() - LOG_FILE_NAME_SUFFIX.length());
+                try {
+                    Date fileDate = fileNameDateTimeFormat.parse(date);
+                    if (fileDate.before(min)){
+                        try {
+                            file.delete();
+                            logFiles.removeFirst();
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    } else {
+                        break;
+                    }
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+            logFile = new File(logsDirectory, currentLogFileName + ".log");
             if (logFile.exists()) {
-                logFile.renameTo(previous);
-                previousLogPath = previous.getAbsolutePath();
                 logFile.delete();
             }
             logFile.createNewFile();
-            currentLogPath = logFile.getPath();
         } catch (IOException e) {
             this.writeToFile = false;
         }
@@ -406,8 +452,16 @@ public class Logger {
     private String zipLog() {
         try (FileOutputStream fileOutputStream = new FileOutputStream(zipLogPath);
              ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
-            addLogFileToZip(zipOutputStream, previousLogPath, LOG_FILE_NAME_PREVIOUS);
-            addLogFileToZip(zipOutputStream, currentLogPath, LOG_FILE_NAME_CURRENT);
+            if (logsDirectory != null && logsDirectory.exists()) {
+                File[] files = logsDirectory.listFiles();
+                if (files != null){
+                    for (File file : files){
+                        if (file.getName().endsWith(LOG_FILE_NAME_SUFFIX)){
+                            addLogFileToZip(zipOutputStream, file.getAbsolutePath(), file.getName());
+                        }
+                    }
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -508,7 +562,7 @@ public class Logger {
      * @param message message to log
      */
     private void logToFile(final String message) {
-        final String text = String.format("%s - %s", dateFormat.format(new Date()), message);
+        final String text = String.format("%s - %s", logDateTimeFormat.format(new Date()), message);
         new Thread(new Runnable() {
             @Override
             public void run() {
