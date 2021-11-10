@@ -5,12 +5,15 @@ android {
 
     def versionMajor = 1
     def versionMinor = 3
+    def versionPatch = 1
 
     def code = versionMajor * 100 + versionMinor
 
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 31
+        versionCode code
+        versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         buildConfigField "String", "VERSION", "\"${versionName}\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
