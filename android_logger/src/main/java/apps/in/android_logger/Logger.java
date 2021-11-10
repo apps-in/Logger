@@ -91,7 +91,7 @@ public class Logger {
         /**
          * Enables writing logs to file.
          *
-         * @param maxDays maximum days before current date to keep log files
+         * @param maxDays  maximum days before current date to keep log files
          * @param minCount minimum number of log files to keep
          * @return current Initializer
          */
@@ -123,6 +123,17 @@ public class Logger {
         }
 
         /**
+         * Enables writing logs to external storage
+         *
+         * @param externalLogger External logging action
+         * @return current Initializer
+         */
+        public Initializer setExternalLogger(ExternalLogger externalLogger) {
+            instance.externalLogger = externalLogger;
+            return this;
+        }
+
+        /**
          * Finishes Logger initializing.
          */
         public void initialize() {
@@ -134,6 +145,7 @@ public class Logger {
     private final Semaphore fileSemaphore = new Semaphore(1, true);
 
     private final SharedPreferences sharedPreferences;
+    private ExternalLogger externalLogger;
     private File logsDirectory;
     private File logFile;
     private String appTag;
@@ -162,9 +174,12 @@ public class Logger {
         return new Initializer(context);
     }
 
-    public static boolean hasUncheckedCrashes(){
+    /**
+     * Checks previous unreported crashes.
+     */
+    public static boolean hasUncheckedCrashes() {
         SharedPreferences sharedPreferences = getLogger().sharedPreferences;
-        if (sharedPreferences.contains(CRASH_PREF_KEY)){
+        if (sharedPreferences.contains(CRASH_PREF_KEY)) {
             boolean result = sharedPreferences.getBoolean(CRASH_PREF_KEY, false);
             sharedPreferences.edit().remove(CRASH_PREF_KEY).apply();
             return result;
@@ -188,37 +203,83 @@ public class Logger {
      * @param message the message
      */
     public static void log(Object context, String message) {
+        getLogger().logMessage(getComponentName(context), message);
+    }
+
+    /**
+     * Log message with object context.
+     *
+     * @param context context description
+     * @param message the message
+     */
+    public static void log(String context, String message) {
         getLogger().logMessage(context, message);
     }
 
     /**
      * Log content of bundle object.
      *
+     * @param context     object context
      * @param description the description of bundle
      * @param bundle      the bundle
      */
     public static void log(Object context, String description, Bundle bundle) {
-        getLogger().logMessage(description, bundle);
+        log(getComponentName(context), description, bundle);
+    }
+
+    /**
+     * Log content of bundle object.
+     *
+     * @param context     context description
+     * @param description the description of bundle
+     * @param bundle      the bundle
+     */
+    public static void log(String context, String description, Bundle bundle) {
+        log(context, getBundleString(description, bundle));
     }
 
     /**
      * Log content of intent .
      *
+     * @param context     object context
      * @param description the description of intent
      * @param intent      the intent
      */
     public static void log(Object context, String description, Intent intent) {
-        getLogger().logMessage(description, intent);
+        log(getComponentName(context), description, intent);
+    }
+
+    /**
+     * Log content of intent .
+     *
+     * @param context     context description
+     * @param description the description of intent
+     * @param intent      the intent
+     */
+    public static void log(String context, String description, Intent intent) {
+        log(context, getIntentString(description, intent));
     }
 
     /**
      * Log exception.
      *
+     * @param context     object context
      * @param description the description of exception
      * @param t           the exception
      */
     public static void log(Object context, String description, Throwable t) {
-        getLogger().logMessage(description, t);
+        log(getComponentName(context), description, t);
+    }
+
+    /**
+     * Log exception.
+     *
+     * @param context     context description
+     * @param description the description of exception
+     * @param t           the exception
+     */
+    public static void log(String context, String description, Throwable t) {
+        log(context, getExceptionString(description, t));
     }
 
     /**
@@ -310,11 +371,11 @@ public class Logger {
         ArrayList<Uri> uris = new ArrayList<>();
         List<String> files = new LinkedList<>();
         File directory = getLogger().logsDirectory;
-        if (directory != null && directory.exists()){
+        if (directory != null && directory.exists()) {
             File[] directoryFiles = directory.listFiles();
-            if (directoryFiles != null){
-                for (File directoryFile : directoryFiles){
-                    if (directoryFile.getName().endsWith(LOG_FILE_NAME_SUFFIX)){
+            if (directoryFiles != null) {
+                for (File directoryFile : directoryFiles) {
+                    if (directoryFile.getName().endsWith(LOG_FILE_NAME_SUFFIX)) {
                         files.add(directoryFile.getAbsolutePath());
                     }
                 }
@@ -353,10 +414,100 @@ public class Logger {
     }
 
     /**
+     * Returns the string representation of context object class
+     *
+     * @param component context object
+     * @return string representation of the context object
+     */
+    private static String getComponentName(Object component) {
+        if (component != null) {
+            return component.getClass().getSimpleName();
+        }
+        return "null";
+    }
+
+    /**
+     * Returns the string representation of the given bundle object
+     *
+     * @param description bundle object description
+     * @param bundle      bundle object
+     * @return string representation of the bundle object
+     */
+    private static String getBundleString(String description, Bundle bundle) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (bundle != null) {
+            Set<String> keys = bundle.keySet();
+            stringBuilder.append(String.format(Locale.US, "\t%s (%d items)", description, keys.size()));
+            for (String key : keys) {
+                stringBuilder.append(String.format("\n\t%s = %s", key, bundle.get(key)));
+            }
+        } else {
+            stringBuilder.append(String.format("\t%s: null", description));
+        }
+        return stringBuilder.toString();
+    }
+
+    /**
+     * Returns the string representation of the given intent object
+     *
+     * @param description description of the intent object
+     * @param intent      intent object
+     * @return string representation of the intent object
+     */
+    private static String getIntentString(String description, Intent intent) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (intent != null) {
+            stringBuilder.append(description);
+            stringBuilder.append(String.format("\nACTION: %s", intent.getAction()));
+            stringBuilder.append(String.format("\nCOMPONENT NAME: %s", getComponentName(intent.getComponent())));
+            stringBuilder.append(String.format("\n%s", getBundleString("EXTRAS", intent.getExtras())));
+        } else {
+            stringBuilder.append(String.format("\t%s: null", description));
+        }
+        return stringBuilder.toString();
+    }
+
+    /**
+     * Returns the string representation of exception
+     *
+     * @param description exception description
+     * @param e           exception
+     * @return string representation of exception
+     */
+    private static String getExceptionString(String description, Throwable e) {
+        return String.format("%s:\n%s", description, getExceptionString(e));
+    }
+
+    /**
+     * Returns the string representation of exception
+     *
+     * @param e exception
+     * @return string representation of exception
+     */
+    private static String getExceptionString(Throwable e) {
+        if (e != null) {
+            Throwable throwable = e;
+            StringBuilder stringBuilder = new StringBuilder();
+            do {
+                stringBuilder.append(String.format("%s: %s", getComponentName(throwable), throwable.getMessage()));
+                for (StackTraceElement element : throwable.getStackTrace()) {
+                    stringBuilder.append("\n\t");
+                    stringBuilder.append(element.toString());
+                }
+                throwable = throwable.getCause();
+                if (throwable != null) {
+                    stringBuilder.append("\nCaused by: ");
+                }
+            } while (throwable != null);
+            return stringBuilder.toString();
+        } else return "";
+    }
+
+    /**
      * Setup file logging
      *
-     * @param context app context
-     * @param maxDays maximum days before current date to keep log files
+     * @param context  app context
+     * @param maxDays  maximum days before current date to keep log files
      * @param minCount minimum number of log files to keep
      */
     private void setWriteToFile(Context context, int maxDays, int minCount) {
@@ -380,7 +531,7 @@ public class Logger {
             if (files != null) {
                 for (File file : files) {
                     String name = file.getName();
-                    if (name.endsWith(LOG_FILE_NAME_SUFFIX)){
+                    if (name.endsWith(LOG_FILE_NAME_SUFFIX)) {
                         logFiles.add(file);
                     } else {
                         try {
@@ -392,23 +543,23 @@ public class Logger {
                 }
             }
             Collections.sort(logFiles, (o1, o2) -> o1.getName().compareTo(o2.getName()));
-            while (logFiles.size() > minCount){
+            while (logFiles.size() > minCount) {
                 File file = logFiles.getFirst();
                 String name = file.getName();
                 String date = name.substring(0, name.length() - LOG_FILE_NAME_SUFFIX.length());
                 try {
                     Date fileDate = fileNameDateTimeFormat.parse(date);
-                    if (fileDate.before(min)){
+                    if (fileDate.before(min)) {
                         try {
                             file.delete();
                             logFiles.removeFirst();
-                        } catch (Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     } else {
                         break;
                     }
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -431,7 +582,7 @@ public class Logger {
         Thread.UncaughtExceptionHandler logHandler = new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
-                logMessage("Uncaught exception", e);
+                logMessage(getExceptionString("Uncaught exception", e));
                 sharedPreferences.edit().putBoolean(CRASH_PREF_KEY, true).apply();
                 if (regularHandler != null) {
                     regularHandler.uncaughtException(t, e);
@@ -454,9 +605,9 @@ public class Logger {
              ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
             if (logsDirectory != null && logsDirectory.exists()) {
                 File[] files = logsDirectory.listFiles();
-                if (files != null){
-                    for (File file : files){
-                        if (file.getName().endsWith(LOG_FILE_NAME_SUFFIX)){
+                if (files != null) {
+                    for (File file : files) {
+                        if (file.getName().endsWith(LOG_FILE_NAME_SUFFIX)) {
                             addLogFileToZip(zipOutputStream, file.getAbsolutePath(), file.getName());
                         }
                     }
@@ -492,45 +643,25 @@ public class Logger {
     }
 
     /**
-     * Logs content of the bundle object
+     * Logs message with object context
      *
-     * @param description description of the bundle object
-     * @param bundle      bundle object
+     * @param context context description
+     * @param message log message
      */
-    private void logMessage(String description, Bundle bundle) {
-        log(getBundleString(description, bundle));
-    }
-
-
-    /**
-     * Logs content of the intent object
-     *
-     * @param description description of the intent object
-     * @param intent      intent object
-     */
-    private void logMessage(String description, Intent intent) {
-        log(getIntentString(description, intent));
+    private void logMessage(String context, String message) {
+        logMessage(context, message, false);
     }
 
     /**
      * Logs message with object context
      *
-     * @param context object context
-     * @param message log message
+     * @param context   context description
+     * @param message   log message
+     * @param external  should log to external storage
      */
-    private void logMessage(Object context, String message) {
-        String m = String.format("%s: %s", getComponentName(context), message);
-        logMessage(m);
-    }
-
-    /**
-     * Logs exception
-     *
-     * @param description description of the exception
-     * @param e           exception
-     */
-    private void logMessage(String description, Throwable e) {
-        logMessage(String.format("%s:\n%s", description, getExceptionString(e)));
+    private void logMessage(String context, String message, boolean external) {
+        String m = String.format("%s: %s", context, message);
+        logMessage(m, external);
     }
 
     /**
@@ -539,11 +670,24 @@ public class Logger {
      * @param message message to log
      */
     private void logMessage(String message) {
+        logMessage(message, false);
+    }
+
+    /**
+     * Logs given message in according with logger settings
+     *
+     * @param message   message to log
+     * @param external  should log to external storage
+     */
+    private void logMessage(String message, boolean external) {
         if (writeToConsole) {
             logToConsole(message);
         }
         if (writeToFile) {
             logToFile(message);
+        }
+        if (external && externalLogger != null){
+            externalLogger.log(message);
         }
     }
 
@@ -563,17 +707,14 @@ public class Logger {
      */
     private void logToFile(final String message) {
         final String text = String.format("%s - %s", logDateTimeFormat.format(new Date()), message);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    fileSemaphore.acquire();
-                    appendToFile(text);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    fileSemaphore.release();
-                }
+        new Thread(() -> {
+            try {
+                fileSemaphore.acquire();
+                appendToFile(text);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                fileSemaphore.release();
             }
         }).start();
     }
@@ -593,85 +734,6 @@ public class Logger {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Returns the string representation of the given bundle object
-     *
-     * @param description bundle object description
-     * @param bundle      bundle object
-     * @return string representation of the bundle object
-     */
-    private String getBundleString(String description, Bundle bundle) {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (bundle != null) {
-            Set<String> keys = bundle.keySet();
-            stringBuilder.append(String.format(Locale.US, "\t%s (%d items)", description, keys.size()));
-            for (String key : keys) {
-                stringBuilder.append(String.format("\n\t%s = %s", key, bundle.get(key)));
-            }
-        } else {
-            stringBuilder.append(String.format("\t%s: null", description));
-        }
-        return stringBuilder.toString();
-    }
-
-    /**
-     * Returns the string representation of the given intent object
-     *
-     * @param description description of the intent object
-     * @param intent      intent object
-     * @return string representation of the intent object
-     */
-    private String getIntentString(String description, Intent intent) {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (intent != null) {
-            stringBuilder.append(description);
-            stringBuilder.append(String.format("\nACTION: %s", intent.getAction()));
-            stringBuilder.append(String.format("\nCOMPONENT NAME: %s", getComponentName(intent.getComponent())));
-            stringBuilder.append(String.format("\n%s", getBundleString("EXTRAS", intent.getExtras())));
-        } else {
-            stringBuilder.append(String.format("\t%s: null", description));
-        }
-        return stringBuilder.toString();
-    }
-
-    /**
-     * Returns the string representation of context object class
-     *
-     * @param component context object
-     * @return string representation of the context object
-     */
-    private String getComponentName(Object component) {
-        if (component != null) {
-            return component.getClass().getSimpleName();
-        }
-        return "null";
-    }
-
-    /**
-     * Returns the string representation of exception
-     *
-     * @param e exception
-     * @return string representation of exception
-     */
-    private String getExceptionString(Throwable e) {
-        if (e != null) {
-            Throwable throwable = e;
-            StringBuilder stringBuilder = new StringBuilder();
-            do {
-                stringBuilder.append(String.format("%s: %s", getComponentName(throwable), throwable.getMessage()));
-                for (StackTraceElement element : throwable.getStackTrace()) {
-                    stringBuilder.append("\n\t");
-                    stringBuilder.append(element.toString());
-                }
-                throwable = throwable.getCause();
-                if (throwable != null) {
-                    stringBuilder.append("\nCaused by: ");
-                }
-            } while (throwable != null);
-            return stringBuilder.toString();
-        } else return "";
     }
 
 }
