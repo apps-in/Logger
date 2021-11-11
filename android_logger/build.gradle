@@ -5,7 +5,7 @@ android {
 
     def versionMajor = 1
     def versionMinor = 3
-    def versionPatch = 2
+    def versionPatch = 4
 
     def code = versionMajor * 100 + versionMinor
 
