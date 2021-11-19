@@ -1,13 +1,16 @@
-apply plugin: 'com.android.library'
+plugins{
+    id 'com.android.library'
+    id 'maven-publish'
+}
+
+def versionMajor = 1
+def versionMinor = 3
+def versionPatch = 10
+
+def code = versionMajor * 100 + versionMinor
 
 android {
     compileSdkVersion 31
-
-    def versionMajor = 1
-    def versionMinor = 3
-    def versionPatch = 4
-
-    def code = versionMajor * 100 + versionMinor
 
     defaultConfig {
         minSdkVersion 21
@@ -36,4 +39,16 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+}
+afterEvaluate {
+    publishing {
+        publications{
+            release(MavenPublication){
+                from components.release
+                groupId = 'apps.in'
+                artifactId = 'android_logger'
+                version = "${versionMajor}.${versionMinor}.${versionPatch}"
+            }
+        }
+    }
 }
