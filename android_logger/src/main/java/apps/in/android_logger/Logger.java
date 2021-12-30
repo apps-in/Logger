@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -583,7 +582,7 @@ public class Logger {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
                 logMessage(getExceptionString("Uncaught exception", e));
-                sharedPreferences.edit().putBoolean(CRASH_PREF_KEY, true).apply();
+                sharedPreferences.edit().putBoolean(CRASH_PREF_KEY, true).commit();
                 if (regularHandler != null) {
                     regularHandler.uncaughtException(t, e);
                 }
