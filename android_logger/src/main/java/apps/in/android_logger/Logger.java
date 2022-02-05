@@ -434,14 +434,18 @@ public class Logger {
      */
     private static String getBundleString(String description, Bundle bundle) {
         StringBuilder stringBuilder = new StringBuilder();
-        if (bundle != null) {
-            Set<String> keys = bundle.keySet();
-            stringBuilder.append(String.format(Locale.US, "\t%s (%d items)", description, keys.size()));
-            for (String key : keys) {
-                stringBuilder.append(String.format("\n\t%s = %s", key, bundle.get(key)));
+        try {
+            if (bundle != null) {
+                Set<String> keys = bundle.keySet();
+                stringBuilder.append(String.format(Locale.US, "\t%s (%d items)", description, keys.size()));
+                for (String key : keys) {
+                    stringBuilder.append(String.format("\n\t%s = %s", key, bundle.get(key)));
+                }
+            } else {
+                stringBuilder.append(String.format("\t%s: null", description));
             }
-        } else {
-            stringBuilder.append(String.format("\t%s: null", description));
+        } catch (Exception e) {
+            return "";
         }
         return stringBuilder.toString();
     }
@@ -654,9 +658,9 @@ public class Logger {
     /**
      * Logs message with object context
      *
-     * @param context   context description
-     * @param message   log message
-     * @param external  should log to external storage
+     * @param context  context description
+     * @param message  log message
+     * @param external should log to external storage
      */
     private void logMessage(String context, String message, boolean external) {
         String m = String.format("%s: %s", context, message);
@@ -675,8 +679,8 @@ public class Logger {
     /**
      * Logs given message in according with logger settings
      *
-     * @param message   message to log
-     * @param external  should log to external storage
+     * @param message  message to log
+     * @param external should log to external storage
      */
     private void logMessage(String message, boolean external) {
         if (writeToConsole) {
@@ -685,7 +689,7 @@ public class Logger {
         if (writeToFile) {
             logToFile(message);
         }
-        if (external && externalLogger != null){
+        if (external && externalLogger != null) {
             externalLogger.log(message);
         }
     }
