@@ -683,14 +683,18 @@ public class Logger {
      * @param external should log to external storage
      */
     private void logMessage(String message, boolean external) {
-        if (writeToConsole) {
-            logToConsole(message);
-        }
-        if (writeToFile) {
-            logToFile(message);
-        }
-        if (external && externalLogger != null) {
-            externalLogger.log(message);
+        try {
+            if (writeToConsole) {
+                logToConsole(message);
+            }
+            if (writeToFile) {
+                logToFile(message);
+            }
+            if (external && externalLogger != null) {
+                externalLogger.log(message);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
         }
     }
 
