@@ -12,12 +12,10 @@ import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -144,9 +142,9 @@ public class Logger {
     private final Semaphore fileSemaphore = new Semaphore(1, true);
 
     private final SharedPreferences sharedPreferences;
+    private LogFileWriter logFileWriter;
     private ExternalLogger externalLogger;
     private File logsDirectory;
-    private File logFile;
     private String appTag;
     private String appId;
     private String appVersion;
@@ -566,11 +564,12 @@ public class Logger {
                     e.printStackTrace();
                 }
             }
-            logFile = new File(logsDirectory, currentLogFileName + ".log");
+            File logFile = new File(logsDirectory, currentLogFileName + ".log");
             if (logFile.exists()) {
                 logFile.delete();
             }
             logFile.createNewFile();
+            logFileWriter = new LogFileWriter(logFile);
         } catch (IOException e) {
             this.writeToFile = false;
         }
@@ -714,33 +713,10 @@ public class Logger {
      */
     private void logToFile(final String message) {
         final String text = String.format("%s - %s", logDateTimeFormat.format(new Date()), message);
-        new Thread(() -> {
-            try {
-                fileSemaphore.acquire();
-                appendToFile(text);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                fileSemaphore.release();
-            }
-        }).start();
-    }
-
-    /**
-     * Appends given message to log file
-     *
-     * @param message message to log
-     */
-    private void appendToFile(String message) {
-        try (
-                FileOutputStream fos = new FileOutputStream(logFile, true);
-                OutputStreamWriter osw = new OutputStreamWriter(fos);
-                BufferedWriter bw = new BufferedWriter(osw)) {
-            bw.newLine();
-            bw.append(message);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (logFileWriter != null){
+            logFileWriter.logToFile(text);
         }
     }
+
 
 }
