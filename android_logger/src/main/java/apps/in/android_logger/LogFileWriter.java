@@ -59,8 +59,8 @@ public class LogFileWriter {
             bufferSemaphore.acquire();
             if (!buffer.isEmpty()) {
                 localBuffer = buffer;
+                buffer = new LinkedList<>();
             }
-            buffer = new LinkedList<>();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
