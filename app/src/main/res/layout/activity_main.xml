@@ -30,6 +30,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonZipLogs" />
 
+    <Button
+        android:id="@+id/buttonStartActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="32dp"
+        android:text="@string/start_activity"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonShareLogs" />
+
     <TextView
         android:id="@+id/textViewZipPath"
         android:layout_width="wrap_content"
@@ -51,7 +63,7 @@
         android:text="@string/crash"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonShareLogs" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonStartActivity" />
 
     <Button
         android:id="@+id/buttonCheckCrash"

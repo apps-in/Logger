@@ -1,6 +1,7 @@
 package apps.in.android_logger;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -460,7 +461,8 @@ public class Logger {
         if (intent != null) {
             stringBuilder.append(description);
             stringBuilder.append(String.format("\nACTION: %s", intent.getAction()));
-            stringBuilder.append(String.format("\nCOMPONENT NAME: %s", getComponentName(intent.getComponent())));
+            ComponentName component = intent.getComponent();
+            stringBuilder.append(String.format("\nCOMPONENT NAME: %s", component != null ? component.getShortClassName() : "null"));
             stringBuilder.append(String.format("\n%s", getBundleString("EXTRAS", intent.getExtras())));
         } else {
             stringBuilder.append(String.format("\t%s: null", description));

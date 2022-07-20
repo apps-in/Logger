@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">LoggerApp</string>
     <string name="zip">Zip</string>
+    <string name="start_activity">Start activity</string>
     <string name="share">Share</string>
     <string name="crash">Crash</string>
     <string name="check">Check</string>

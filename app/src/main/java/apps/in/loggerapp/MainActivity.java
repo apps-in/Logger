@@ -1,8 +1,8 @@
 package apps.in.loggerapp;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.widget.TextView;
 
 import apps.in.android_logger.LogActivity;
 import apps.in.android_logger.Logger;
@@ -25,6 +25,9 @@ public class MainActivity extends LogActivity {
         binding.buttonCheckCrash.setOnClickListener(v -> {
             boolean result = Logger.hasUncheckedCrashes();
             binding.textCheckCrash.setText(String.valueOf(result));
+        });
+        binding.buttonStartActivity.setOnClickListener(v -> {
+            startActivity(new Intent(this, SecondActivity.class));
         });
     }
 }
