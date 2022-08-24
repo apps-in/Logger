@@ -1,0 +1,3 @@
+ninja: Entering directory `C:\Projects\Libraries\Logger\app\.cxx\Debug\e49n31n5\arm64-v8a'
+[1/2] Building C object CMakeFiles/native-lib.dir/src/main/cpp/coffeecatch.c.o
+[2/2] Linking CXX shared library ..\..\..\..\build\intermediates\cxx\Debug\e49n31n5\obj\arm64-v8a\libnative-lib.so

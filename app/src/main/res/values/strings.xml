@@ -5,4 +5,5 @@
     <string name="share">Share</string>
     <string name="crash">Crash</string>
     <string name="check">Check</string>
+    <string name="crash_native">Native crash</string>
 </resources>

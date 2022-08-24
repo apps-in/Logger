@@ -1,0 +1,7 @@
+[
+{
+  "directory": "C:/Projects/Libraries/Logger/app/.cxx/Debug/e49n31n5/x86",
+  "command": "F:\\Users\\Igor\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe --target=i686-none-linux-android21 --gcc-toolchain=F:/Users/Igor/AppData/Local/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/windows-x86_64 --sysroot=F:/Users/Igor/AppData/Local/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/windows-x86_64/sysroot -Dnative_lib_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -mstackrealign -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -O0 -fno-limit-debug-info  -fPIC -o CMakeFiles\\native-lib.dir\\src\\main\\cpp\\native_lib.cpp.o -c C:\\Projects\\Libraries\\Logger\\app\\src\\main\\cpp\\native_lib.cpp",
+  "file": "C:/Projects/Libraries/Logger/app/src/main/cpp/native_lib.cpp"
+}
+]

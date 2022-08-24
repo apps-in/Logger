@@ -1,0 +1,17 @@
+# ninja log v5
+5	213	683044711	CMakeFiles/native_lib.dir/src/main/cpp/native_lib.cpp.o	94bc9619b16a913f
+0	559	683044712	CMakeFiles/native_lib.dir/src/main/cpp/coffeejni.c.o	30d2bb880dc27e7b
+3	584	683044712	CMakeFiles/native_lib.dir/src/main/cpp/coffeecatch.c.o	b61ef575641b98d6
+584	708	683044712	../../../../build/intermediates/cxx/Debug/e49n31n5/obj/arm64-v8a/libnative_lib.so	6dd9e1918f1e695c
+2	135	683045147	../../../../build/intermediates/cxx/Debug/e49n31n5/obj/arm64-v8a/libnative_lib.so	4d753adae655d40d
+0	127	683051849	CMakeFiles/native-lib.dir/src/main/cpp/native_lib.cpp.o	7b5771a912140443
+127	227	683051849	../../../../build/intermediates/cxx/Debug/e49n31n5/obj/arm64-v8a/libnative-lib.so	ef4a7da0811293f5
+1	107	683051933	CMakeFiles/native-lib.dir/src/main/cpp/coffeejni.c.o	7349cc257979aa47
+5	151	683051934	CMakeFiles/native-lib.dir/src/main/cpp/coffeecatch.c.o	dcb75c15ae2ae2f9
+151	240	683051934	../../../../build/intermediates/cxx/Debug/e49n31n5/obj/arm64-v8a/libnative-lib.so	7802e18d5d6de080
+2	158	683052476	CMakeFiles/native-lib.dir/src/main/cpp/coffeecatch.c.o	dcb75c15ae2ae2f9
+158	264	683052476	../../../../build/intermediates/cxx/Debug/e49n31n5/obj/arm64-v8a/libnative-lib.so	7802e18d5d6de080
+2	228	683052521	CMakeFiles/native-lib.dir/src/main/cpp/coffeecatch.c.o	dcb75c15ae2ae2f9
+228	386	683052522	../../../../build/intermediates/cxx/Debug/e49n31n5/obj/arm64-v8a/libnative-lib.so	7802e18d5d6de080
+2	1068	683052543	CMakeFiles/native-lib.dir/src/main/cpp/coffeecatch.c.o	dcb75c15ae2ae2f9
+1068	1974	683052544	../../../../build/intermediates/cxx/Debug/e49n31n5/obj/arm64-v8a/libnative-lib.so	7802e18d5d6de080

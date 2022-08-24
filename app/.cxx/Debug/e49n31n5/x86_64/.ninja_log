@@ -1,0 +1,6 @@
+# ninja log v5
+1	118	683044715	CMakeFiles/native_lib.dir/src/main/cpp/coffeejni.c.o	1327c6906db3977c
+6	200	683044715	CMakeFiles/native_lib.dir/src/main/cpp/native_lib.cpp.o	2b32a986b2282693
+0	90	683051851	CMakeFiles/native-lib.dir/src/main/cpp/native_lib.cpp.o	c80aed264c4e350a
+90	246	683051851	../../../../build/intermediates/cxx/Debug/e49n31n5/obj/x86_64/libnative-lib.so	f62d1379f6fcd0fd
+3	104	683051935	CMakeFiles/native-lib.dir/src/main/cpp/coffeejni.c.o	dba320ca9abd5cea

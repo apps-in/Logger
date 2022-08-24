@@ -11,6 +11,12 @@ import apps.in.loggerapp.databinding.ActivityMainBinding;
 
 public class MainActivity extends LogActivity {
 
+    static {
+        System.loadLibrary("native_lib");
+    }
+
+    private static native int throwException();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,6 +27,10 @@ public class MainActivity extends LogActivity {
         binding.buttonShareLogs.setOnClickListener(v -> Logger.shareLog(activity, "Send logs", true));
         binding.buttonCrash.setOnClickListener(v -> {
             int temp = 1 / 0;
+        });
+        binding.buttonNativeCrash.setOnClickListener(v -> {
+            int temp = throwException();
+            int n = 0;
         });
         binding.buttonCheckCrash.setOnClickListener(v -> {
             boolean result = Logger.hasUncheckedCrashes();
