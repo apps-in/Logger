@@ -583,14 +583,12 @@ public class Logger {
     private void startLogging() {
         logger = this;
         final Thread.UncaughtExceptionHandler regularHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.UncaughtExceptionHandler logHandler = new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                logMessage(getExceptionString("Uncaught exception", e));
-                sharedPreferences.edit().putBoolean(CRASH_PREF_KEY, true).commit();
-                if (regularHandler != null) {
-                    regularHandler.uncaughtException(t, e);
-                }
+        Thread.UncaughtExceptionHandler logHandler = (t, e) -> {
+            logMessage(getExceptionString("Uncaught exception", e));
+            sharedPreferences.edit().putBoolean(CRASH_PREF_KEY, true).commit();
+            flush();
+            if (regularHandler != null) {
+                regularHandler.uncaughtException(t, e);
             }
         };
         Thread.setDefaultUncaughtExceptionHandler(logHandler);
@@ -717,6 +715,12 @@ public class Logger {
         final String text = String.format("%s - %s", logDateTimeFormat.format(new Date()), message);
         if (logFileWriter != null){
             logFileWriter.logToFile(text);
+        }
+    }
+
+    private void flush(){
+        if (logFileWriter != null){
+            logFileWriter.flush();
         }
     }
 

@@ -14,21 +14,24 @@ public class LogFileWriter {
     private final Semaphore bufferSemaphore = new Semaphore(1, true);
     private final File logFile;
 
+    private boolean isWorking = true;
+    private Thread writerThread;
     private LinkedList<String> buffer = new LinkedList<>();
 
     public LogFileWriter(File logFile) {
         this.logFile = logFile;
         if (logFile != null) {
-            new Thread(() -> {
+            writerThread = new Thread(() -> {
                 try {
-                    while (true) {
+                    while (isWorking) {
                         writeBufferToFile();
                         Thread.sleep(500);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }).start();
+            });
+            writerThread.start();
         }
     }
 
@@ -78,6 +81,15 @@ public class LogFileWriter {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void flush(){
+        isWorking = false;
+        try {
+            writerThread.join(2000);
+        } catch (Exception e){
+            e.printStackTrace();
         }
     }
 
