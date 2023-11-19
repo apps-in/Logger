@@ -195,6 +195,16 @@ public class Logger {
     }
 
     /**
+     * Log simple message.
+     *
+     * @param tag     message tag
+     * @param message the message
+     */
+    public static void logWithTag(String tag, String message) {
+        getLogger().logMessage(tag, message);
+    }
+
+    /**
      * Log message with object context.
      *
      * @param context object context
@@ -207,11 +217,33 @@ public class Logger {
     /**
      * Log message with object context.
      *
+     * @param tag     message tag
+     * @param context object context
+     * @param message the message
+     */
+    public static void logWithTag(String tag, Object context, String message) {
+        getLogger().logMessage(tag, getComponentName(context), message);
+    }
+
+    /**
+     * Log message with object context.
+     *
      * @param context context description
      * @param message the message
      */
     public static void log(String context, String message) {
         getLogger().logMessage(context, message);
+    }
+
+    /**
+     * Log message with object context.
+     *
+     * @param tag     message tag
+     * @param context context description
+     * @param message the message
+     */
+    public static void logWithTag(String tag, String context, String message) {
+        getLogger().logMessage(tag, context, message);
     }
 
     /**
@@ -228,12 +260,36 @@ public class Logger {
     /**
      * Log content of bundle object.
      *
+     * @param tag         message tag
+     * @param context     object context
+     * @param description the description of bundle
+     * @param bundle      the bundle
+     */
+    public static void logWithTag(String tag, Object context, String description, Bundle bundle) {
+        logWithTag(tag, getComponentName(context), description, bundle);
+    }
+
+    /**
+     * Log content of bundle object.
+     *
      * @param context     context description
      * @param description the description of bundle
      * @param bundle      the bundle
      */
     public static void log(String context, String description, Bundle bundle) {
         log(context, getBundleString(description, bundle));
+    }
+
+    /**
+     * Log content of bundle object.
+     *
+     * @param tag         message tag
+     * @param context     context description
+     * @param description the description of bundle
+     * @param bundle      the bundle
+     */
+    public static void logWithTag(String tag, String context, String description, Bundle bundle) {
+        logWithTag(tag, context, getBundleString(description, bundle));
     }
 
     /**
@@ -250,12 +306,36 @@ public class Logger {
     /**
      * Log content of intent .
      *
+     * @param tag         message tag
+     * @param context     object context
+     * @param description the description of intent
+     * @param intent      the intent
+     */
+    public static void logWithTag(String tag, Object context, String description, Intent intent) {
+        logWithTag(tag, getComponentName(context), description, intent);
+    }
+
+    /**
+     * Log content of intent .
+     *
      * @param context     context description
      * @param description the description of intent
      * @param intent      the intent
      */
     public static void log(String context, String description, Intent intent) {
         log(context, getIntentString(description, intent));
+    }
+
+    /**
+     * Log content of intent .
+     *
+     * @param tag         message tag
+     * @param context     context description
+     * @param description the description of intent
+     * @param intent      the intent
+     */
+    public static void logWithTag(String tag, String context, String description, Intent intent) {
+        logWithTag(tag, context, getIntentString(description, intent));
     }
 
     /**
@@ -272,12 +352,36 @@ public class Logger {
     /**
      * Log exception.
      *
+     * @param tag         message tag
+     * @param context     object context
+     * @param description the description of exception
+     * @param t           the exception
+     */
+    public static void logWithTag(String tag, Object context, String description, Throwable t) {
+        logWithTag(tag, getComponentName(context), description, t);
+    }
+
+    /**
+     * Log exception.
+     *
      * @param context     context description
      * @param description the description of exception
      * @param t           the exception
      */
     public static void log(String context, String description, Throwable t) {
         log(context, getExceptionString(description, t));
+    }
+
+    /**
+     * Log exception.
+     *
+     * @param tag         message tag
+     * @param context     context description
+     * @param description the description of exception
+     * @param t           the exception
+     */
+    public static void logWithTag(String tag, String context, String description, Throwable t) {
+        logWithTag(tag, context, getExceptionString(description, t));
     }
 
     /**
@@ -657,7 +761,7 @@ public class Logger {
     /**
      * Logs message with object context
      *
-     * @param tag message tag
+     * @param tag     message tag
      * @param context context description
      * @param message log message
      */
@@ -668,7 +772,7 @@ public class Logger {
     /**
      * Logs message with object context
      *
-     * @param tag message tag
+     * @param tag      message tag
      * @param context  context description
      * @param message  log message
      * @param external should log to external storage
