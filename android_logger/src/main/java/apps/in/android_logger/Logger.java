@@ -651,19 +651,31 @@ public class Logger {
      * @param message log message
      */
     private void logMessage(String context, String message) {
+        logMessage(null, context, message);
+    }
+
+    /**
+     * Logs message with object context
+     *
+     * @param tag message tag
+     * @param context context description
+     * @param message log message
+     */
+    private void logMessage(String tag, String context, String message) {
         logMessage(context, message, false);
     }
 
     /**
      * Logs message with object context
      *
+     * @param tag message tag
      * @param context  context description
      * @param message  log message
      * @param external should log to external storage
      */
-    private void logMessage(String context, String message, boolean external) {
+    private void logMessage(String tag, String context, String message, boolean external) {
         String m = String.format("%s: %s", context, message);
-        logMessage(m, external);
+        logMessage(tag, m, external);
     }
 
     /**
@@ -672,7 +684,7 @@ public class Logger {
      * @param message message to log
      */
     private void logMessage(String message) {
-        logMessage(message, false);
+        logMessage(null, message, false);
     }
 
     /**
@@ -681,18 +693,18 @@ public class Logger {
      * @param message  message to log
      * @param external should log to external storage
      */
-    private void logMessage(String message, boolean external) {
+    private void logMessage(String tag, String message, boolean external) {
         try {
             if (writeToConsole) {
-                logToConsole(message);
+                logToConsole(tag, message);
             }
             if (writeToFile) {
-                logToFile(message);
+                logToFile(tag, message);
             }
             if (external && externalLogger != null) {
-                externalLogger.log(message);
+                externalLogger.log(tag != null ? tag : appTag, message);
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -702,8 +714,8 @@ public class Logger {
      *
      * @param message message to log
      */
-    private void logToConsole(String message) {
-        Log.i(appTag, message);
+    private void logToConsole(String tag, String message) {
+        Log.i(tag != null ? tag : appTag, message);
     }
 
     /**
@@ -711,15 +723,15 @@ public class Logger {
      *
      * @param message message to log
      */
-    private void logToFile(final String message) {
-        final String text = String.format("%s - %s", logDateTimeFormat.format(new Date()), message);
-        if (logFileWriter != null){
+    private void logToFile(final String tag, final String message) {
+        final String text = String.format("%s:[%s]:\t%s", logDateTimeFormat.format(new Date()), tag != null ? tag : appTag, message);
+        if (logFileWriter != null) {
             logFileWriter.logToFile(text);
         }
     }
 
-    private void flush(){
-        if (logFileWriter != null){
+    private void flush() {
+        if (logFileWriter != null) {
             logFileWriter.flush();
         }
     }
