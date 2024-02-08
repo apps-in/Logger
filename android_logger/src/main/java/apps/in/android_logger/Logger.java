@@ -766,7 +766,7 @@ public class Logger {
      * @param message log message
      */
     private void logMessage(String tag, String context, String message) {
-        logMessage(context, message, false);
+        logMessage(tag, context, message, false);
     }
 
     /**
