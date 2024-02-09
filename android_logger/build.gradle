@@ -1,12 +1,15 @@
 plugins{
     id 'com.android.library'
+    id 'maven-publish'
 }
 
 def versionMajor = 1
 def versionMinor = 4
 def versionPatch = 3
 
-def code = versionMajor * 100 + versionMinor
+def code = versionMajor * 10000 + versionMajor + 1000 * versionMinor + versionPatch
+
+def versionName = "${versionMajor}.${versionMinor}.${versionPatch}"
 
 android {
     compileSdk 33
@@ -27,7 +30,27 @@ android {
         }
     }
     namespace 'apps.in.android_logger'
+}
 
+publishing {
+    publications {
+        bar(MavenPublication){
+            groupId "apps.in"
+            artifactId "logger"
+            version "${versionName}"
+            artifact ("$buildDir/outputs/aar/android_logger-release.aar")
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/apps-in/Logger")
+            credentials {
+                username = "ihor-nepomniashchyi"
+                password = "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"
+            }
+        }
+    }
 }
 
 dependencies {
