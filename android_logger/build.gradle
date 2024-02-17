@@ -46,8 +46,8 @@ publishing {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/apps-in/Logger")
             credentials {
-                username = System.getenv("GITHUB_PKG_USER")
-                password = System.getenv("GITHUB_PKG_TOKEN")
+                username = System.getenv("GITHUB_USER")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
