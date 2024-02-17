@@ -12,64 +12,64 @@ public abstract class LogDialogFragment extends DialogFragment {
 
     @Override
     public void onAttach(Context context) {
-        Logger.log(this, "Lifecycle: onAttach");
+        InLogger.log(this, "Lifecycle: onAttach");
         super.onAttach(context);
     }
 
     @Override
     public void onDetach() {
-        Logger.log(this, "Lifecycle: onDetach");
+        InLogger.log(this, "Lifecycle: onDetach");
         super.onDetach();
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        Logger.log(this, "Lifecycle: onCreate");
-        Logger.log(this,"savedInstanceState", savedInstanceState);
+        InLogger.log(this, "Lifecycle: onCreate");
+        InLogger.log(this,"savedInstanceState", savedInstanceState);
         super.onCreate(savedInstanceState);
     }
 
     @Override
     public void onCancel(DialogInterface dialog) {
-        Logger.log(this, "Lifecycle: onCancel");
+        InLogger.log(this, "Lifecycle: onCancel");
         super.onCancel(dialog);
     }
 
     @Override
     public void onDismiss(DialogInterface dialog) {
-        Logger.log(this, "Lifecycle: onDismiss");
+        InLogger.log(this, "Lifecycle: onDismiss");
         super.onDismiss(dialog);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        Logger.log(this, "Lifecycle: onActivityCreated");
-        Logger.log(this,"savedInstanceState", savedInstanceState);
+        InLogger.log(this, "Lifecycle: onActivityCreated");
+        InLogger.log(this,"savedInstanceState", savedInstanceState);
         super.onActivityCreated(savedInstanceState);
     }
 
     @Override
     public void onStart() {
-        Logger.log(this, "Lifecycle: onStart");
+        InLogger.log(this, "Lifecycle: onStart");
         super.onStart();
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        Logger.log(this, "Lifecycle: onSaveInstanceState");
-        Logger.log(this,"outState", outState);
+        InLogger.log(this, "Lifecycle: onSaveInstanceState");
+        InLogger.log(this,"outState", outState);
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onStop() {
-        Logger.log(this, "Lifecycle: onStop");
+        InLogger.log(this, "Lifecycle: onStop");
         super.onStop();
     }
 
     @Override
     public void onDestroyView() {
-        Logger.log(this, "Lifecycle: onDestroyView");
+        InLogger.log(this, "Lifecycle: onDestroyView");
         super.onDestroyView();
     }
 }

@@ -34,7 +34,7 @@ import java.util.zip.ZipOutputStream;
 /**
  * Logger object.
  */
-public class Logger {
+public class InLogger {
 
     private static final String LOG_PATH = "logs";
     private static final int LOG_TO_FILE_MAX_DAYS_DEFAULT_VALUE = 1;
@@ -43,7 +43,7 @@ public class Logger {
     private static final String LOG_FILE_NAME_ZIP = "log.zip";
     private static final String PREFERENCES_FILE = "logger.pref";
     private static final String CRASH_PREF_KEY = "WAS_CRASH";
-    private static Logger logger;
+    private static InLogger logger;
     private static final SimpleDateFormat fileNameDateTimeFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.US);
     private static final SimpleDateFormat logDateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS", Locale.US);
 
@@ -52,7 +52,7 @@ public class Logger {
      */
     public static class Initializer {
 
-        private final Logger instance;
+        private final InLogger instance;
         private final Context context;
 
         /**
@@ -61,7 +61,7 @@ public class Logger {
          * @param context application context
          */
         public Initializer(Context context) {
-            instance = new Logger(context.getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE));
+            instance = new InLogger(context.getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE));
             this.context = context;
         }
 
@@ -158,7 +158,7 @@ public class Logger {
      *
      * @param sharedPreferences logger preferences
      */
-    private Logger(SharedPreferences sharedPreferences) {
+    private InLogger(SharedPreferences sharedPreferences) {
         this.sharedPreferences = sharedPreferences;
     }
 
@@ -432,7 +432,7 @@ public class Logger {
      *
      * @return
      */
-    private static Logger getLogger() {
+    private static InLogger getLogger() {
         if (logger != null) {
             return logger;
         } else {
@@ -469,7 +469,7 @@ public class Logger {
      */
     private static Intent shareRawLogs(Context context) {
         Intent intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-        Logger logger = getLogger();
+        InLogger logger = getLogger();
         ArrayList<Uri> uris = new ArrayList<>();
         List<String> files = new LinkedList<>();
         File directory = getLogger().logsDirectory;

@@ -5,7 +5,7 @@ plugins{
 
 def versionMajor = 1
 def versionMinor = 4
-def versionPatch = 3
+def versionPatch = 4
 
 def code = versionMajor * 10000 + versionMajor + 1000 * versionMinor + versionPatch
 

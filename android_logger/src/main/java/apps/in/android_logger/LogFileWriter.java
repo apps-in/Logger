@@ -85,9 +85,10 @@ public class LogFileWriter {
     }
 
     public void flush(){
-        isWorking = false;
         try {
-            writerThread.join(2000);
+            Thread.sleep(500);
+            isWorking = false;
+            writerThread.join(10000);
         } catch (Exception e){
             e.printStackTrace();
         }

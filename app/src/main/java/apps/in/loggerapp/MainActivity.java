@@ -5,35 +5,26 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import apps.in.android_logger.LogActivity;
-import apps.in.android_logger.Logger;
+import apps.in.android_logger.InLogger;
 import apps.in.loggerapp.databinding.ActivityMainBinding;
 
 
 public class MainActivity extends LogActivity {
-
-    static {
-        System.loadLibrary("native_lib");
-    }
-
-    private static native int throwException();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        binding.buttonZipLogs.setOnClickListener(v -> binding.textViewZipPath.setText(Logger.getLogZip()));
+        binding.buttonZipLogs.setOnClickListener(v -> binding.textViewZipPath.setText(InLogger.getLogZip()));
         final Activity activity = this;
-        binding.buttonShareLogs.setOnClickListener(v -> Logger.shareLog(activity, "Send logs", true));
+        binding.buttonShareLogs.setOnClickListener(v -> InLogger.shareLog(activity, "Send logs", true));
         binding.buttonCrash.setOnClickListener(v -> {
+            InLogger.log(this, "Throwing exception");
             int temp = 1 / 0;
         });
-        binding.buttonNativeCrash.setOnClickListener(v -> {
-            int temp = throwException();
-            int n = 0;
-        });
         binding.buttonCheckCrash.setOnClickListener(v -> {
-            boolean result = Logger.hasUncheckedCrashes();
+            boolean result = InLogger.hasUncheckedCrashes();
             binding.textCheckCrash.setText(String.valueOf(result));
         });
         binding.buttonStartActivity.setOnClickListener(v -> {
