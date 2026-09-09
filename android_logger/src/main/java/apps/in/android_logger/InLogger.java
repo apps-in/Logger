@@ -44,8 +44,10 @@ public class InLogger {
     private static final String PREFERENCES_FILE = "logger.pref";
     private static final String CRASH_PREF_KEY = "WAS_CRASH";
     private static InLogger logger;
-    private static final SimpleDateFormat fileNameDateTimeFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.US);
-    private static final SimpleDateFormat logDateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS", Locale.US);
+    private static final ThreadLocal<SimpleDateFormat> fileNameDateTimeFormat =
+            ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.US));
+    private static final ThreadLocal<SimpleDateFormat> logDateTimeFormat =
+            ThreadLocal.withInitial(() -> new SimpleDateFormat("dd.MM.yyyy HH:mm:ss.SSS", Locale.US));
 
     /**
      * Initializer for Logger.
@@ -455,8 +457,9 @@ public class InLogger {
                 intent.setType("application/zip");
                 intent.putExtra(Intent.EXTRA_STREAM, uri);
                 intent.putExtra(Intent.EXTRA_SUBJECT, String.format("Logs of %s(%s)", logger.appId, logger.appVersion));
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                return intent;
             }
-            return intent;
         }
         return null;
     }
@@ -493,6 +496,7 @@ public class InLogger {
             intent.setType("text/plain");
             intent.putExtra(Intent.EXTRA_STREAM, uris);
             intent.putExtra(Intent.EXTRA_SUBJECT, String.format("Logs of %s(%s)", logger.appId, logger.appVersion));
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             return intent;
         }
         return null;
@@ -630,7 +634,7 @@ public class InLogger {
             }
             zipLogPath = zip.getAbsolutePath();
             Calendar calendar = Calendar.getInstance();
-            String currentLogFileName = fileNameDateTimeFormat.format(calendar.getTime());
+            String currentLogFileName = fileNameDateTimeFormat.get().format(calendar.getTime());
             calendar.add(Calendar.DAY_OF_MONTH, -maxDays);
             Date min = calendar.getTime();
             File[] files = logsDirectory.listFiles();
@@ -655,19 +659,18 @@ public class InLogger {
                 String name = file.getName();
                 String date = name.substring(0, name.length() - LOG_FILE_NAME_SUFFIX.length());
                 try {
-                    Date fileDate = fileNameDateTimeFormat.parse(date);
-                    if (fileDate.before(min)) {
-                        try {
-                            file.delete();
-                            logFiles.removeFirst();
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    Date fileDate = fileNameDateTimeFormat.get().parse(date);
+                    if (fileDate != null && fileDate.before(min)) {
+                        if (!file.delete()) {
+                            file.deleteOnExit();
                         }
+                        logFiles.removeFirst();
                     } else {
                         break;
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    logFiles.removeFirst();
                 }
             }
             File logFile = new File(logsDirectory, currentLogFileName + ".log");
@@ -675,7 +678,7 @@ public class InLogger {
                 logFile.delete();
             }
             logFile.createNewFile();
-            logFileWriter = new LogFileWriter(logFile);
+            logFileWriter = new LogFileWriter(logFile, fileSemaphore);
         } catch (IOException e) {
             this.writeToFile = false;
         }
@@ -707,14 +710,25 @@ public class InLogger {
      * @return path to zip-archive
      */
     private String zipLog() {
-        try (FileOutputStream fileOutputStream = new FileOutputStream(zipLogPath);
-             ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
-            if (logsDirectory != null && logsDirectory.exists()) {
-                File[] files = logsDirectory.listFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        if (file.getName().endsWith(LOG_FILE_NAME_SUFFIX)) {
-                            addLogFileToZip(zipOutputStream, file.getAbsolutePath(), file.getName());
+        if (zipLogPath == null) {
+            return null;
+        }
+        if (logFileWriter != null) {
+            logFileWriter.drain();
+        }
+        boolean acquired = false;
+        try {
+            fileSemaphore.acquire();
+            acquired = true;
+            try (FileOutputStream fileOutputStream = new FileOutputStream(zipLogPath);
+                 ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
+                if (logsDirectory != null && logsDirectory.exists()) {
+                    File[] files = logsDirectory.listFiles();
+                    if (files != null) {
+                        for (File file : files) {
+                            if (file.getName().endsWith(LOG_FILE_NAME_SUFFIX)) {
+                                addLogFileToZip(zipOutputStream, file.getAbsolutePath(), file.getName());
+                            }
                         }
                     }
                 }
@@ -722,6 +736,10 @@ public class InLogger {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        } finally {
+            if (acquired) {
+                fileSemaphore.release();
+            }
         }
         return zipLogPath;
     }
@@ -734,8 +752,7 @@ public class InLogger {
      * @param fileName        name of log file in zip-archive
      */
     private void addLogFileToZip(ZipOutputStream zipOutputStream, String logFilePath, String fileName) {
-        try {
-            FileInputStream fileInputStream = new FileInputStream(logFilePath);
+        try (FileInputStream fileInputStream = new FileInputStream(logFilePath)) {
             zipOutputStream.putNextEntry(new ZipEntry(fileName));
             byte[] buffer = new byte[65545];
             int count;
@@ -766,20 +783,8 @@ public class InLogger {
      * @param message log message
      */
     private void logMessage(String tag, String context, String message) {
-        logMessage(tag, context, message, false);
-    }
-
-    /**
-     * Logs message with object context
-     *
-     * @param tag      message tag
-     * @param context  context description
-     * @param message  log message
-     * @param external should log to external storage
-     */
-    private void logMessage(String tag, String context, String message, boolean external) {
         String m = String.format("%s: %s", context, message);
-        logMessage(tag, m, external);
+        writeLog(tag, m);
     }
 
     /**
@@ -788,16 +793,16 @@ public class InLogger {
      * @param message message to log
      */
     private void logMessage(String message) {
-        logMessage(null, message, false);
+        writeLog(null, message);
     }
 
     /**
      * Logs given message in according with logger settings
      *
-     * @param message  message to log
-     * @param external should log to external storage
+     * @param tag     message tag
+     * @param message message to log
      */
-    private void logMessage(String tag, String message, boolean external) {
+    private void writeLog(String tag, String message) {
         try {
             if (writeToConsole) {
                 logToConsole(tag, message);
@@ -805,7 +810,7 @@ public class InLogger {
             if (writeToFile) {
                 logToFile(tag, message);
             }
-            if (external && externalLogger != null) {
+            if (externalLogger != null) {
                 externalLogger.log(tag != null ? tag : appTag, message);
             }
         } catch (Exception e) {
@@ -828,7 +833,7 @@ public class InLogger {
      * @param message message to log
      */
     private void logToFile(final String tag, final String message) {
-        final String text = String.format("%s:[%s]:\t%s", logDateTimeFormat.format(new Date()), tag != null ? tag : appTag, message);
+        final String text = String.format("%s:[%s]:\t%s", logDateTimeFormat.get().format(new Date()), tag != null ? tag : appTag, message);
         if (logFileWriter != null) {
             logFileWriter.logToFile(text);
         }

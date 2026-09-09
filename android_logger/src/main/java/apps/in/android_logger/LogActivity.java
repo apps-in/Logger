@@ -96,7 +96,7 @@ public abstract class LogActivity extends AppCompatActivity {
 
     @Override
     public ComponentName startService(Intent service) {
-        InLogger.log("this, Starting service");
+        InLogger.log(this, "Starting service");
         InLogger.log(this,"Intent", service);
         ComponentName componentName = super.startService(service);
         InLogger.log(this, String.format("Service component name: %s", componentName != null ? componentName.getClass().getSimpleName() : "null"));
