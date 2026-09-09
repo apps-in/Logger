@@ -784,7 +784,7 @@ public class InLogger {
      */
     private void logMessage(String tag, String context, String message) {
         String m = String.format("%s: %s", context, message);
-        logMessage(tag, m);
+        writeLog(tag, m);
     }
 
     /**
@@ -793,7 +793,7 @@ public class InLogger {
      * @param message message to log
      */
     private void logMessage(String message) {
-        logMessage(null, message);
+        writeLog(null, message);
     }
 
     /**
@@ -802,7 +802,7 @@ public class InLogger {
      * @param tag     message tag
      * @param message message to log
      */
-    private void logMessage(String tag, String message) {
+    private void writeLog(String tag, String message) {
         try {
             if (writeToConsole) {
                 logToConsole(tag, message);
