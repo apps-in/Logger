@@ -7,24 +7,22 @@ Android logging library
 Add maven repository to the build.gradle (project level)
 
 ```gradle
-allprojects {
     repositories {
         ...
         maven { url 'https://maven.pkg.github.com/apps-in/Logger' }
     }
-}
 ```
 
 Add logger dependency to the build.gradle (app level)
 
 ```gradle
-implementation 'apps.in:logger:[vesrion number. ]'
+implementation 'apps.in:logger:1.5.0'
 ```
 
 Initialize logger before first use
 
 ```java
-  Logger.initializeLogger(this)
+  InLogger.initializeLogger(this)
                 .setAppId("My app id")
                 .setAppVersion("My app version")
                 .writeToConsole("My tag")
@@ -32,36 +30,13 @@ Initialize logger before first use
                 .initialize();
 ```
 
-Log your data with on of the **Logger.log()** method
+Log your data with one of the **InLogger.log()** methods
 
 ## How to publish update
 
-Add **publishing** section to build.gradle (app level)
+Publishing is configured in `android_logger/build.gradle` via `maven-publish` and `components.release`.
 
-```gradle
-publishing {
-    publications {
-        bar(MavenPublication){
-            groupId "apps.in"
-            artifactId "logger"
-            version "${versionName}"
-            artifact ("$buildDir/outputs/aar/android_logger-release.aar")
-        }
-    }
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/apps-in/Logger")
-            credentials {
-                username = System.getenv("GITHUB_PKG_USER")
-                password = System.getenv("GITHUB_PKG_TOKEN")
-            }
-        }
-    }
-}
-```
-
-Setup environment variables with your github user name and token with **package:write** permission
+Setup environment variables with your GitHub user name and token with **package:write** permission
 ```
 GITHUB_PKG_USER
 GITHUB_PKG_TOKEN

@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 
@@ -12,24 +13,32 @@ public class LogFileWriter {
     private final int MAX_BUFFER_SIZE = 1000;
 
     private final Semaphore bufferSemaphore = new Semaphore(1, true);
+    private final Semaphore fileSemaphore;
     private final File logFile;
 
-    private boolean isWorking = true;
+    private volatile boolean isWorking = true;
     private Thread writerThread;
     private LinkedList<String> buffer = new LinkedList<>();
 
     public LogFileWriter(File logFile) {
+        this(logFile, new Semaphore(1, true));
+    }
+
+    public LogFileWriter(File logFile, Semaphore fileSemaphore) {
         this.logFile = logFile;
+        this.fileSemaphore = fileSemaphore != null ? fileSemaphore : new Semaphore(1, true);
         if (logFile != null) {
             writerThread = new Thread(() -> {
-                try {
-                    while (isWorking) {
-                        writeBufferToFile();
+                while (isWorking) {
+                    writeBufferToFile();
+                    try {
                         Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+                writeBufferToFile();
             });
             writerThread.start();
         }
@@ -54,6 +63,13 @@ public class LogFileWriter {
     }
 
     /**
+     * Writes any pending buffer entries to disk without stopping the writer.
+     */
+    public void drain() {
+        writeBufferToFile();
+    }
+
+    /**
      * Appends buffer to log file
      */
     private void writeBufferToFile() {
@@ -70,29 +86,39 @@ public class LogFileWriter {
             bufferSemaphore.release();
         }
         if (localBuffer != null) {
-            try (
-                    FileOutputStream fos = new FileOutputStream(logFile, true);
-                    OutputStreamWriter osw = new OutputStreamWriter(fos);
-                    BufferedWriter bw = new BufferedWriter(osw)) {
-                for (String message : localBuffer) {
-                    bw.newLine();
-                    bw.append(message);
+            boolean acquired = false;
+            try {
+                fileSemaphore.acquire();
+                acquired = true;
+                try (
+                        FileOutputStream fos = new FileOutputStream(logFile, true);
+                        OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+                        BufferedWriter bw = new BufferedWriter(osw)) {
+                    for (String message : localBuffer) {
+                        bw.newLine();
+                        bw.append(message);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                if (acquired) {
+                    fileSemaphore.release();
+                }
             }
         }
     }
 
-    public void flush(){
+    public void flush() {
         try {
-            Thread.sleep(500);
             isWorking = false;
-            writerThread.join(10000);
-        } catch (Exception e){
+            if (writerThread != null) {
+                writerThread.interrupt();
+                writerThread.join(10000);
+            }
+            writeBufferToFile();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-
 }
