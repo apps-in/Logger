@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'com.vanniktech.maven.publish' version '0.37.0'
+    id 'signing'
 }
 
 def versionMajor = 1
@@ -40,18 +41,11 @@ android {
     buildFeatures {
         buildConfig true
     }
-}
 
-signing {
-    def inMemoryKey = findProperty('signingInMemoryKey') ?: findProperty('signing.inMemoryKey')
-    if (inMemoryKey) {
-        useInMemoryPgpKeys(
-            (findProperty('signingInMemoryKeyId') ?: findProperty('signing.keyId')) as String,
-            inMemoryKey as String,
-            (findProperty('signingInMemoryKeyPassword') ?: findProperty('signing.password')) as String,
-        )
-    } else {
-        useGpgCmd()
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
     }
 }
 
