@@ -84,31 +84,15 @@ mavenCentralUsername=YOUR_CENTRAL_PORTAL_USERNAME
 mavenCentralPassword=YOUR_CENTRAL_PORTAL_PASSWORD
 ```
 
+### Publish
+
 On Windows, publish with the helper script (it exports the GPG key correctly for Gradle):
 
 ```powershell
 .\publish.ps1
 ```
 
-When using `publish.ps1`, keep only `mavenCentral*` properties in `~/.gradle/gradle.properties`. Remove `signing.keyId`, `signing.password`, and `signing.useGpgCmd` from that file, otherwise signing can fail with `Cannot find key with id ... in key data`.
-
-For CI, use `ORG_GRADLE_PROJECT_`-prefixed environment variables instead (see the example file).
-
-### Publish
-
-Linux or macOS:
-
-```sh
-./publish.sh
-```
-
-Windows:
-
-```bat
-publish.bat
-```
-
-This runs `publishAndReleaseToMavenCentral`, which uploads the signed artifacts, validates the deployment, and releases it to Maven Central automatically.
+When using `publish.ps1`, keep only `mavenCentral*` properties in `~/.gradle/gradle.properties`.
 
 ## License
 
