@@ -16,7 +16,7 @@ if (-not $GpgPassword) {
 
 $gpgOutput = & gpg --export-secret-keys --armor $keyFingerprint 2>&1
 if ($LASTEXITCODE -ne 0) {
-    throw "Failed to export GPG key $keyFingerprint: $gpgOutput"
+    throw "Failed to export GPG key ${keyFingerprint}: $gpgOutput"
 }
 
 $armoredKey = ($gpgOutput | Where-Object { $_ -is [string] }) -join "`n"
