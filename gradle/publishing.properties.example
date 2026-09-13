@@ -1,0 +1,23 @@
+# Copy these properties to %USERPROFILE%\.gradle\gradle.properties (Windows)
+# or ~/.gradle/gradle.properties (Linux/macOS).
+# Generate a user token at https://central.sonatype.com/account
+
+mavenCentralUsername=YOUR_CENTRAL_PORTAL_USERNAME
+mavenCentralPassword=YOUR_CENTRAL_PORTAL_PASSWORD
+
+# Option A (recommended on Windows): use publish.ps1 (in-memory signing).
+# Keep only mavenCentral* properties in this file when using publish.ps1.
+# Do NOT set signing.keyId / signing.useGpgCmd together with publish.ps1.
+
+# Option B: sign via gpg executable (without publish.ps1)
+# signing.useGpgCmd=true
+# signing.keyId=21912616
+# signing.password=YOUR_GPG_KEY_PASSWORD
+
+# Option C (CI): in-memory armored key via environment variables
+# ORG_GRADLE_PROJECT_signingInMemoryKey=<multiline armored key>
+# ORG_GRADLE_PROJECT_signingInMemoryKeyPassword=YOUR_GPG_KEY_PASSWORD
+# Do not set signingInMemoryKeyId unless required.
+
+# Windows publish:
+# .\publish.ps1

@@ -1,30 +1,18 @@
 # Logger
 
-Android logging library (`apps.in:logger:1.5.0`).
+Android logging library (`io.github.ihor-nepomniashchyi:logger:1.5.0`).
 
 Requires **minSdk 23**.
 
 ## How to use
 
-Add the GitHub Packages repository. In `settings.gradle`:
-
-```gradle
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url 'https://maven.pkg.github.com/apps-in/Logger' }
-    }
-}
-```
-
-GitHub Packages may require credentials with `read:packages` permission.
-
 Add the dependency to the app-level `build.gradle`:
 
 ```gradle
-implementation 'apps.in:logger:1.5.0'
+implementation 'io.github.ihor-nepomniashchyi:logger:1.5.0'
 ```
+
+The artifact is published to Maven Central, so no extra repository configuration is required when `mavenCentral()` is already enabled.
 
 Initialize the logger before the first log call, typically in `Application.onCreate()`:
 
@@ -79,16 +67,34 @@ To log Android lifecycle events, extend `LogActivity`, `LogFragment`, `LogDialog
 
 ## How to publish update
 
-Publishing is already configured in `android_logger/build.gradle` (`maven-publish`, `components.release`).
+Publishing to Maven Central is configured in `android_logger/build.gradle` via the [Gradle Maven Publish Plugin](https://github.com/vanniktech/gradle-maven-publish-plugin).
 
-Set environment variables with a GitHub user name and a token that has **package:write** permission:
+### Prerequisites
 
+1. Namespace `io.github.ihor-nepomniashchyi` registered and verified on [Central Portal](https://central.sonatype.com/).
+2. User token generated in Central Portal (Account → Generate User Token).
+3. GPG key created and the public key uploaded to a keyserver (required for release builds).
+
+### Credentials
+
+Add the following to `~/.gradle/gradle.properties` (see `gradle/publishing.properties.example`):
+
+```properties
+mavenCentralUsername=YOUR_CENTRAL_PORTAL_USERNAME
+mavenCentralPassword=YOUR_CENTRAL_PORTAL_PASSWORD
 ```
-GITHUB_PKG_USER
-GITHUB_PKG_TOKEN
+
+On Windows, publish with the helper script (it exports the GPG key correctly for Gradle):
+
+```powershell
+.\publish.ps1
 ```
 
-Run the publish script:
+When using `publish.ps1`, keep only `mavenCentral*` properties in `~/.gradle/gradle.properties`. Remove `signing.keyId`, `signing.password`, and `signing.useGpgCmd` from that file, otherwise signing can fail with `Cannot find key with id ... in key data`.
+
+For CI, use `ORG_GRADLE_PROJECT_`-prefixed environment variables instead (see the example file).
+
+### Publish
 
 Linux or macOS:
 
@@ -101,6 +107,8 @@ Windows:
 ```bat
 publish.bat
 ```
+
+This runs `publishAndReleaseToMavenCentral`, which uploads the signed artifacts, validates the deployment, and releases it to Maven Central automatically.
 
 ## License
 

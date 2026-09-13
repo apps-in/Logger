@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
-    id 'maven-publish'
+    id 'com.vanniktech.maven.publish' version '0.37.0'
+    id 'signing'
 }
 
 def versionMajor = 1
@@ -40,33 +41,38 @@ android {
     buildFeatures {
         buildConfig true
     }
-
-    publishing {
-        singleVariant('release') {
-            withSourcesJar()
-        }
-    }
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
-                groupId = 'apps.in'
-                artifactId = 'logger'
-                version = loggerVersion
+mavenPublishing {
+    publishToMavenCentral(true)
+
+    signAllPublications()
+
+    coordinates('io.github.ihor-nepomniashchyi', 'logger', loggerVersion)
+
+    pom {
+        name = 'Logger'
+        description = 'Android logging library with console, file, and lifecycle logging.'
+        inceptionYear = '2018'
+        url = 'https://github.com/apps-in/Logger/'
+        licenses {
+            license {
+                name = 'MIT License'
+                url = 'https://opensource.org/licenses/MIT'
+                distribution = 'repo'
             }
         }
-        repositories {
-            maven {
-                name = 'GitHubPackages'
-                url = uri('https://maven.pkg.github.com/apps-in/Logger')
-                credentials {
-                    username = System.getenv('GITHUB_PKG_USER')
-                    password = System.getenv('GITHUB_PKG_TOKEN')
-                }
+        developers {
+            developer {
+                id = 'ihor-nepomniashchyi'
+                name = 'Ihor Nepomniashchyi'
+                url = 'https://github.com/ihor-nepomniashchyi/'
             }
+        }
+        scm {
+            url = 'https://github.com/apps-in/Logger/'
+            connection = 'scm:git:git://github.com/apps-in/Logger.git'
+            developerConnection = 'scm:git:ssh://git@github.com/apps-in/Logger.git'
         }
     }
 }
