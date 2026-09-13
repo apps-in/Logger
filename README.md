@@ -83,9 +83,17 @@ Add the following to `~/.gradle/gradle.properties` (see `gradle/publishing.prope
 mavenCentralUsername=YOUR_CENTRAL_PORTAL_USERNAME
 mavenCentralPassword=YOUR_CENTRAL_PORTAL_PASSWORD
 
-signing.keyId=YOUR_GPG_KEY_ID
+signing.useGpgCmd=true
+signing.keyId=21912616
 signing.password=YOUR_GPG_KEY_PASSWORD
-signing.secretKeyRingFile=/path/to/.gnupg/secring.gpg
+```
+
+On Windows with modern GnuPG, do **not** use `signing.secretKeyRingFile` (`~` is not expanded, and keyboxd keys are incompatible with the legacy key ring format).
+
+If `useGpgCmd` still fails, use the in-memory key script:
+
+```powershell
+.\publish.ps1 -GpgPassword 'YOUR_GPG_KEY_PASSWORD'
 ```
 
 For CI, use `ORG_GRADLE_PROJECT_`-prefixed environment variables instead (see the example file).

@@ -1,16 +1,21 @@
-# Copy these properties to ~/.gradle/gradle.properties (or set as environment variables).
+# Copy these properties to %USERPROFILE%\.gradle\gradle.properties (Windows)
+# or ~/.gradle/gradle.properties (Linux/macOS).
 # Generate a user token at https://central.sonatype.com/account
 
 mavenCentralUsername=YOUR_CENTRAL_PORTAL_USERNAME
 mavenCentralPassword=YOUR_CENTRAL_PORTAL_PASSWORD
 
-signing.keyId=YOUR_GPG_KEY_ID
+# Option A (recommended on Windows with modern GnuPG): sign via gpg executable
+signing.useGpgCmd=true
+signing.keyId=21912616
 signing.password=YOUR_GPG_KEY_PASSWORD
-signing.secretKeyRingFile=/path/to/.gnupg/secring.gpg
 
-# CI alternative (in-memory key):
-# ORG_GRADLE_PROJECT_mavenCentralUsername=...
-# ORG_GRADLE_PROJECT_mavenCentralPassword=...
-# ORG_GRADLE_PROJECT_signingInMemoryKey="$(gpg --export-secret-keys --armor YOUR_GPG_KEY_ID)"
-# ORG_GRADLE_PROJECT_signingInMemoryKeyId=YOUR_GPG_KEY_ID
+# Do NOT use ~ in paths on Windows. Do NOT use secretKeyRingFile with modern GnuPG/keyboxd.
+
+# Option B (CI or when gpg cmd signing fails): in-memory armored key
+# ORG_GRADLE_PROJECT_signingInMemoryKey=<output of: gpg --export-secret-keys --armor 21912616>
+# ORG_GRADLE_PROJECT_signingInMemoryKeyId=21912616
 # ORG_GRADLE_PROJECT_signingInMemoryKeyPassword=YOUR_GPG_KEY_PASSWORD
+
+# Option C (Windows helper script):
+# .\publish.ps1 -GpgPassword 'YOUR_GPG_KEY_PASSWORD'

@@ -42,6 +42,19 @@ android {
     }
 }
 
+signing {
+    def inMemoryKey = findProperty('signingInMemoryKey') ?: findProperty('signing.inMemoryKey')
+    if (inMemoryKey) {
+        useInMemoryPgpKeys(
+            (findProperty('signingInMemoryKeyId') ?: findProperty('signing.keyId')) as String,
+            inMemoryKey as String,
+            (findProperty('signingInMemoryKeyPassword') ?: findProperty('signing.password')) as String,
+        )
+    } else {
+        useGpgCmd()
+    }
+}
+
 mavenPublishing {
     publishToMavenCentral(true)
 
