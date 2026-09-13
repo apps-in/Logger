@@ -5,17 +5,19 @@
 mavenCentralUsername=YOUR_CENTRAL_PORTAL_USERNAME
 mavenCentralPassword=YOUR_CENTRAL_PORTAL_PASSWORD
 
-# Option A (recommended on Windows with modern GnuPG): sign via gpg executable
-signing.useGpgCmd=true
-signing.keyId=21912616
-signing.password=YOUR_GPG_KEY_PASSWORD
+# Option A (recommended on Windows): use publish.ps1 (in-memory signing).
+# Keep only mavenCentral* properties in this file when using publish.ps1.
+# Do NOT set signing.keyId / signing.useGpgCmd together with publish.ps1.
 
-# Do NOT use ~ in paths on Windows. Do NOT use secretKeyRingFile with modern GnuPG/keyboxd.
+# Option B: sign via gpg executable (without publish.ps1)
+# signing.useGpgCmd=true
+# signing.keyId=21912616
+# signing.password=YOUR_GPG_KEY_PASSWORD
 
-# Option B (CI or when gpg cmd signing fails): in-memory armored key
-# ORG_GRADLE_PROJECT_signingInMemoryKey=<output of: gpg --export-secret-keys --armor 21912616>
-# ORG_GRADLE_PROJECT_signingInMemoryKeyId=21912616
+# Option C (CI): in-memory armored key via environment variables
+# ORG_GRADLE_PROJECT_signingInMemoryKey=<multiline armored key>
 # ORG_GRADLE_PROJECT_signingInMemoryKeyPassword=YOUR_GPG_KEY_PASSWORD
+# Do not set signingInMemoryKeyId unless required.
 
-# Option C (Windows helper script):
-# .\publish.ps1 -GpgPassword 'YOUR_GPG_KEY_PASSWORD'
+# Windows publish:
+# .\publish.ps1
